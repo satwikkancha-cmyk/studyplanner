@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow – Student Study Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+        <div class="logo-text">
+          <span class="logo-name">StudyFlow</span>
+          <span class="logo-tagline">Your personal study companion</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="date-chip"><i class="fas fa-calendar-day"></i><span id="dateDisplay"></span></div>
+    </div>
+    <div class="header-right">
+      <div class="global-stats">
+        <div class="gstat"><i class="fas fa-clock"></i><span id="totalTimeDisplay">0m</span><small>Total Study</small></div>
+        <div class="gstat-divider"></div>
+        <div class="gstat"><i class="fas fa-bullseye"></i><span id="totalCompletionDisplay">0%</span><small>Overall Progress</small></div>
+      </div>
+      <button class="btn-add-subject" onclick="openAddSubjectModal()">
+        <i class="fas fa-plus"></i> Add Subject
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>My Subjects</h2>
+        <span class="badge" id="subjectCount">0</span>
+      </div>
+      <div class="subject-list" id="subjectList"></div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <!-- Welcome Screen -->
+      <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-inner">
+          <div class="welcome-icon-wrap"><i class="fas fa-book-open"></i></div>
+          <h2>Welcome to StudyFlow!</h2>
+          <p>Organise your subjects, track topics with checklists, and time your study sessions — all in one place.</p>
+          <div class="welcome-features">
+            <div class="wf-item"><i class="fas fa-list-check"></i><span>Topic Checklists</span></div>
+            <div class="wf-item"><i class="fas fa-stopwatch"></i><span>Study Timer</span></div>
+            <div class="wf-item"><i class="fas fa-chart-pie"></i><span>Progress Tracking</span></div>
+          </div>
+          <button class="btn-primary lg" onclick="openAddSubjectModal()">
+            <i class="fas fa-plus"></i> Add Your First Subject
+          </button>
+        </div>
+      </div>
+
+      <!-- Subject Detail -->
+      <div class="subject-detail" id="subjectDetail" style="display:none">
+
+        <!-- Subject Header -->
+        <div class="subject-header" id="subjectHeader">
+          <div class="subject-title-area">
+            <div class="subject-icon-lg" id="subjectIconBadge"></div>
+            <div>
+              <h1 id="subjectTitle"></h1>
+              <p id="subjectDescription"></p>
+            </div>
+          </div>
+          <div class="subject-actions">
+            <button class="btn-icon" onclick="editCurrentSubject()" title="Edit Subject"><i class="fas fa-pen"></i></button>
+            <button class="btn-icon danger" onclick="deleteCurrentSubject()" title="Delete Subject"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+
+        <!-- Stats + Timer Row -->
+        <div class="dashboard-row">
+
+          <!-- Timer Card -->
+          <div class="timer-card">
+            <div class="timer-label"><i class="fas fa-stopwatch"></i> Study Timer</div>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="session-status" id="sessionStatus"><span class="dot idle"></span> Not started</div>
+            <div class="timer-controls">
+              <button class="btn-timer start" id="timerStartBtn" onclick="toggleTimer()">
+                <i class="fas fa-play"></i><span>Start</span>
+              </button>
+              <button class="btn-timer reset" onclick="resetTimer()">
+                <i class="fas fa-redo"></i><span>Reset</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="sc-icon"><i class="fas fa-book"></i></div>
+              <div class="sc-val" id="topicCountStat">0</div>
+              <div class="sc-lbl">Topics</div>
+            </div>
+            <div class="stat-card green">
+              <div class="sc-icon"><i class="fas fa-check-circle"></i></div>
+              <div class="sc-val" id="completedCountStat">0</div>
+              <div class="sc-lbl">Completed</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="sc-icon"><i class="fas fa-hourglass-half"></i></div>
+              <div class="sc-val" id="studyTimeStat">0m</div>
+              <div class="sc-lbl">Study Time</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="sc-icon"><i class="fas fa-fire"></i></div>
+              <div class="sc-val" id="pendingCountStat">0</div>
+              <div class="sc-lbl">Remaining</div>
+            </div>
+          </div>
+
+          <!-- Circular Progress -->
+          <div class="progress-card">
+            <div class="circular-progress-wrap">
+              <svg class="circular-svg" viewBox="0 0 100 100">
+                <circle class="cp-bg" cx="50" cy="50" r="42"/>
+                <circle class="cp-fill" id="cpFill" cx="50" cy="50" r="42"
+                  stroke-dasharray="0 264" stroke-dashoffset="66"/>
+              </svg>
+              <div class="cp-text">
+                <div class="cp-pct" id="cpPct">0%</div>
+                <div class="cp-lbl">Progress</div>
+              </div>
+            </div>
+            <div class="progress-label">Subject Completion</div>
+          </div>
+
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="pbar-wrap">
+          <div class="pbar-info">
+            <span>Overall Progress</span>
+            <span id="pbarLabel">0 / 0 topics done</span>
+          </div>
+          <div class="pbar-track">
+            <div class="pbar-fill" id="pbarFill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Topics Section -->
+        <div class="topics-section">
+          <div class="topics-header">
+            <div class="th-left">
+              <h2><i class="fas fa-list-check"></i> Topics Checklist</h2>
+              <span class="topic-filter-tabs">
+                <button class="ftab active" onclick="setFilter('all', this)">All</button>
+                <button class="ftab" onclick="setFilter('pending', this)">Pending</button>
+                <button class="ftab" onclick="setFilter('done', this)">Done</button>
+              </span>
+            </div>
+            <div class="th-right">
+              <button class="btn-secondary sm" onclick="checkAllTopics()"><i class="fas fa-check-double"></i> All Done</button>
+              <button class="btn-secondary sm" onclick="uncheckAllTopics()"><i class="fas fa-rotate-left"></i> Reset</button>
+              <button class="btn-primary" onclick="openAddTopicModal()"><i class="fas fa-plus"></i> Add Topic</button>
+            </div>
+          </div>
+
+          <div id="topicsList" class="topics-list"></div>
+          <div id="emptyTopics" class="empty-topics" style="display:none">
+            <i class="fas fa-clipboard-list"></i>
+            <p>No topics yet — add some to start tracking!</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Subject Modal -->
+<div class="modal-overlay" id="subjectModal" onclick="closeModalOnOverlay(event,'subjectModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="subjectModalTitle">Add Subject</h3>
+      <button class="modal-close" onclick="closeModal('subjectModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Subject Name <span class="req">*</span></label>
+        <input type="text" id="subjectNameInput" placeholder="e.g., Mathematics, Physics, History…" maxlength="50">
+      </div>
+      <div class="form-group">
+        <label>Description <span class="opt">(optional)</span></label>
+        <input type="text" id="subjectDescInput" placeholder="Short description or goal for this subject" maxlength="120">
+      </div>
+      <div class="form-group">
+        <label>Colour Theme</label>
+        <div class="color-picker" id="colorPicker"></div>
+      </div>
+      <div class="form-group">
+        <label>Icon</label>
+        <div class="icon-picker" id="iconPicker"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('subjectModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveSubject()"><i class="fas fa-save"></i> Save Subject</button>
+    </div>
+  </div>
+</div>
+
+<!-- Topic Modal -->
+<div class="modal-overlay" id="topicModal" onclick="closeModalOnOverlay(event,'topicModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="topicModalTitle">Add Topic</h3>
+      <button class="modal-close" onclick="closeModal('topicModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Topic Name <span class="req">*</span></label>
+        <input type="text" id="topicNameInput" placeholder="e.g., Chapter 3 – Quadratic Equations" maxlength="100">
+      </div>
+      <div class="form-group">
+        <label>Notes <span class="opt">(optional)</span></label>
+        <textarea id="topicNotesInput" placeholder="Resources, key points, page numbers…" rows="3" maxlength="400"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <div class="priority-picker">
+          <label class="p-option">
+            <input type="radio" name="topicPriority" value="low">
+            <span class="pbadge low"><i class="fas fa-circle-down"></i> Low</span>
+          </label>
+          <label class="p-option">
+            <input type="radio" name="topicPriority" value="medium" checked>
+            <span class="pbadge medium"><i class="fas fa-circle-right"></i> Medium</span>
+          </label>
+          <label class="p-option">
+            <input type="radio" name="topicPriority" value="high">
+            <span class="pbadge high"><i class="fas fa-circle-up"></i> High</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('topicModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveTopic()"><i class="fas fa-save"></i> Save Topic</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal sm">
+    <div class="modal-header">
+      <h3>Confirm Action</h3>
+      <button class="modal-close" onclick="closeModal('confirmModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-icon"><i class="fas fa-triangle-exclamation"></i></div>
+      <p id="confirmMessage">Are you sure?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn-danger" id="confirmBtn"><i class="fas fa-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
